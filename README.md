@@ -18,8 +18,10 @@ git branch -M main
 
 # 3. 원격 저장소 주소 등록
 git remote add origin [https://github.com/사용자아이디/리포지토리이름.git](https://github.com/사용자아이디/리포지토리이름.git)
+```
 
 ## 만약 수정하고싶다면
+```bash
 # 1. 변경된 파일 확인 (빨간색으로 표시된 파일들)
 git status
 
@@ -31,11 +33,12 @@ git commit -m "feat: 어떤 기능을 수정했는지 간단히 작성"
 
 # 4. GitHub 온라인 저장소로 전송
 git push origin main
+```
 
 ---
 
 ### ## 💡 백엔드 개발자를 위한 추가 조언
-
+```bash
 **1. 커밋 메시지 규칙 (Convention)**
 나중에 본인이 쓴 메시지를 보고 "이때 뭘 고쳤더라?" 하고 헷갈리지 않으려면 일정한 규칙을 정해두는 게 좋습니다.
 * `feat:` : 새로운 기능 추가
@@ -49,7 +52,7 @@ git push origin main
 이제 이 내용을 `README.md`에 넣고 저장해 보세요! 나중에 다른 프로젝트를 시작할 때 이 파일만 열어보면 바로 명령어를 기억해낼 수 있을 거예요.
 
 성공적으로 README를 작성하셨나요? 혹시 마크다운(Markdown) 문법 중에 더 궁금한 표현 방식이 있으신가요? (예: 표 만들기, 이미지 넣기 등)
-
+```
 # Federated Learning with PyTorch and Flower (Quickstart Example)
 
 This introductory example to Flower uses PyTorch, but deep knowledge of PyTorch is not necessarily required to run the example. However, it will help you understand how to adapt Flower to your use case. Running this example in itself is quite easy. This example uses [Flower Datasets](https://flower.ai/docs/datasets/) to download, partition and preprocess the CIFAR-10 dataset.
