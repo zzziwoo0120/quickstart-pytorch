@@ -5,7 +5,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from datasets import load_dataset
 from flwr_datasets import FederatedDataset
-from flwr_datasets.partitioner import IidPartitioner
+# IID 일 때
+# from flwr_datasets.partitioner import IidPartitioner 
+# Non-IID일 때
+from flwr_datasets.partitioner import DirichletPartitioner 
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, ToTensor
 
@@ -41,7 +44,8 @@ def apply_transforms(batch):
     batch["img"] = [pytorch_transforms(img) for img in batch["img"]]
     return batch
 
-
+# IID loda_data
+'''
 def load_data(partition_id: int, num_partitions: int, batch_size: int):
     """Load partition CIFAR10 data."""
     # Only initialize `FederatedDataset` once
@@ -62,7 +66,54 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int):
     )
     testloader = DataLoader(partition_train_test["test"], batch_size=batch_size)
     return trainloader, testloader
+'''
 
+# Non-IID load_data
+
+def load_data(partition_id: int, num_partitions: int, batch_size: int):
+    global fds
+    
+    # 2. DirichletPartitioner 설정 (Non-IID 핵심)
+    # alpha=0.1은 데이터가 매우 불균형하게 섞이도록 설정하는 값입니다.
+    # IID
+    # partitioner = IidPartitioner(num_partitions=num_partitions)
+    
+    # Non-IID
+    partitioner = DirichletPartitioner(
+        num_partitions=num_partitions, 
+        partition_by="label", 
+        alpha=0.5, 
+        seed=42
+    )
+
+    # 3. FederatedDataset 초기화
+    if fds is None:
+        fds = FederatedDataset(
+            dataset="uoft-cs/cifar10",
+            partitioners={"train": partitioner},
+        )
+
+    # 4. 특정 클라이언트(partition_id)의 데이터 가져오기
+    partition = fds.load_partition(partition_id, "train")
+
+    # 5. 전처리(Transform) 적용
+    pytorch_transforms = Compose(
+        [ToTensor(), Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]
+    )
+
+    def apply_transforms(batch):
+        batch["img"] = [pytorch_transforms(img) for img in batch["img"]]
+        return batch
+
+    # 6. 학습용/검증용 데이터 분할 (80:20)
+    partition = partition.with_transform(apply_transforms)
+    partition = partition.train_test_split(test_size=0.2, seed=42)
+    
+    # [수정] batch_size = 32를 batch_size=batch_size로
+    trainloader = DataLoader(partition["train"], batch_size=batch_size, shuffle=True)
+    valloader = DataLoader(partition["test"], batch_size=batch_size)
+    
+    return trainloader, valloader
 
 def load_centralized_dataset():
     """Load test set and return dataloader."""
@@ -76,7 +127,7 @@ def train(net, trainloader, epochs, lr, device):
     """Train the model on the training set."""
     net.to(device)  # move model to GPU if available
     criterion = torch.nn.CrossEntropyLoss().to(device)
-    optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=0.9)
+    optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9) # lr=lr 수정
     net.train()
     running_loss = 0.0
     for _ in range(epochs):
