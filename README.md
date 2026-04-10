@@ -4,6 +4,11 @@ dataset: [CIFAR-10]
 framework: [torch, torchvision]
 ---
 
+## 가상환경
+```bash
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 ## ## 🚀 GitHub 개발 워크플로우 가이드
 
 ### 1. 프로젝트 초기 설정 (최초 1회)
